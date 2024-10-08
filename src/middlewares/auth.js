@@ -7,6 +7,16 @@ const adminAuth = (req, res, next) => {
     res.status(401).send("Unauthorized access");
   }
 };
+const userAuth = (req, res, next) => {
+  const token = "abc";
+  const isAutharised = token === "abc";
+  if (isAutharised) {
+    next();
+  } else {
+    res.status(401).send("Unauthorized access");
+  }
+};
 module.exports = {
   adminAuth,
+  userAuth,
 };

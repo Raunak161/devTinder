@@ -1,14 +1,14 @@
 const express = require("express");
-//const { adminAuth } = require("./middlewares/Auth");
+const { adminAuth, userAuth } = require("./middlewares/Auth");
 const app = express();
 
-// app.use("/admin", adminAuth);
-// app.use("/admin/getAllData", (req, res, next) => {
-//   res.send("This is All data");
-// });
-// app.use("/admin/getName", (req, res, next) => {
-//   res.send("This is Name");
-// });
+app.use("/admin", adminAuth);
+app.use("/admin/getAllData", (req, res, next) => {
+  res.send("This is All data");
+});
+app.use("/admin/getName", (req, res, next) => {
+  res.send("This is Name");
+});
 
 
 app.use("/user", (req, res, next) => {
@@ -27,7 +27,7 @@ app.use("/", (req, res, next) => {
 app.use("/", (err, req, res, next) => {
   console.log("handler3")
   if (err) {
-    res.status(500).send("An error has occured");
+    res.status(500).send("An error has occured please contact support team");
   } else {
     res.send("3 handler");
   }
