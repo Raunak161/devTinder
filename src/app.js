@@ -1,38 +1,31 @@
 const express = require("express");
-const { adminAuth, userAuth } = require("./middlewares/Auth");
+const { connectDB } = require("./config/database.js");
+const User = require("./models/user.js");
 const app = express();
 
-app.use("/admin", adminAuth);
-app.use("/admin/getAllData", (req, res, next) => {
-  res.send("This is All data");
-});
-app.use("/admin/getName", (req, res, next) => {
-  res.send("This is Name");
-});
-
-
-app.use("/user", (req, res, next) => {
-  console.log("1 handler");
-  //res.send("ok")
-  throw new Error("error");
-  //res.send("handler 1")
-  next();
-});
-app.use("/", (req, res, next) => {
-  console.log("2 handler"); //not run
-  //res.send("2 handler")
-  next();
-});
-
-app.use("/", (err, req, res, next) => {
-  console.log("handler3")
-  if (err) {
-    res.status(500).send("An error has occured please contact support team");
-  } else {
-    res.send("3 handler");
+app.post("/signup", async (req, res) => {
+  const userObj = {
+    firstName: "virat",
+    lastName: "kohli",
+    emailId: "viratkohli@gmail.com",
+    password: "virat@12",
+  };
+  //Creating a new instance of the User model
+  const user = new User(userObj);
+  try {
+    await user.save();
+    res.send("user added successfully");
+  } catch (err) {
+    res.status(400).send("Error saving the user:" + err.message);
   }
 });
 
-app.listen(3000, () => {
-  console.log("server is successfully listning on the port 3000")
-});
+connectDB()
+  .then(() => {
+    app.listen(3000, () => {
+      console.log("server is successfully listening on the port 3000");
+    });
+  })
+  .catch(() => {
+    console.log("Server is not listening");
+  });
