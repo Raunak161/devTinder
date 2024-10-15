@@ -2,21 +2,40 @@ const express = require("express");
 const { connectDB } = require("./config/database.js");
 const User = require("./models/user.js");
 const app = express();
-
+app.use("/", express.json()); //json to javascript object middleware
 app.post("/signup", async (req, res) => {
-  const userObj = {
-    firstName: "virat",
-    lastName: "kohli",
-    emailId: "viratkohli@gmail.com",
-    password: "virat@12",
-  };
   //Creating a new instance of the User model
-  const user = new User(userObj);
+  //console.log(req.body);
+  const user = new User(req.body);
   try {
     await user.save();
     res.send("user added successfully");
   } catch (err) {
     res.status(400).send("Error saving the user:" + err.message);
+  }
+});
+
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({});
+    if (users.length === 0) {
+      res.send("users not found");
+    } else {
+      res.send(users);
+    }
+  } catch {
+    res.status(400).send("something went wrong");
+  }
+});
+
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.emailId;
+  try {
+    const user = await User.findOne({ emailId: userEmail });
+    if (user) res.send(user);
+    else res.send("user not found");
+  } catch {
+    res.status(400).send("something went wrong");
   }
 });
 
