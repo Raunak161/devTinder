@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 //schema
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -12,6 +13,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     unique: true,
+    validate: (value) => {
+      if (!validator.isEmail(value)) {
+        throw new Error("Invlid error");
+      }
+    },
   },
   password: {
     type: String,
@@ -42,6 +48,13 @@ const userSchema = new mongoose.Schema({
   },
   skills: {
     type: [String],
+    validate: {
+      validator: (value) => {
+        if (value.length > 10) return false;
+        else return true;
+      },
+      message: "skills can not be more than 10",
+    },
   },
 });
 //model
