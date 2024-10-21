@@ -1,12 +1,15 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const { connectDB } = require("./config/database.js");
 const User = require("./models/user.js");
 const { validateSignUpData } = require("./utils/validation.js");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
 const app = express();
+const privateKey = "xyz123";
 
 app.use("/", express.json()); //json to javascript object middleware
-
+app.use("/", cookieParser());
 app.post("/signup", async (req, res) => {
   try {
     validateSignUpData(req);
@@ -29,6 +32,13 @@ app.post("/login", async (req, res) => {
     if (!user) throw new Error("Invalid credentials");
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) throw new Error("Invalid credentials");
+    const token = jwt.sign(
+      {
+        _id: user.id,
+      },
+      privateKey
+    );
+    res.cookie("token", token);
     res.send("user logged in successfully");
   } catch (err) {
     res.status(400).send(err.message);
@@ -77,6 +87,14 @@ app.patch("/patch/:userId", async (req, res) => {
   } catch (err) {
     res.status(400).send(err.message);
   }
+});
+
+app.get("/profile", async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) throw new Error("Invalid token");
+  const { _id } = jwt.verify(token, privateKey);
+  const user = await User.findById({ _id: _id });
+  res.send(user);
 });
 
 connectDB()
