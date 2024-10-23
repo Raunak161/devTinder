@@ -4,10 +4,10 @@ const { connectDB } = require("./config/database.js");
 const User = require("./models/user.js");
 const { validateSignUpData } = require("./utils/validation.js");
 const bcrypt = require("bcrypt");
+const { userAuth } = require("./middlewares/Auth.js");
 const cookieParser = require("cookie-parser");
 const app = express();
 const privateKey = "xyz123";
-
 app.use("/", express.json()); //json to javascript object middleware
 app.use("/", cookieParser());
 app.post("/signup", async (req, res) => {
@@ -36,7 +36,10 @@ app.post("/login", async (req, res) => {
       {
         _id: user.id,
       },
-      privateKey
+      privateKey,
+      {
+        expiresIn: "1d",
+      }
     );
     res.cookie("token", token);
     res.send("user logged in successfully");
@@ -59,8 +62,8 @@ app.get("/feed", async (req, res) => {
 });
 
 app.get("/user", async (req, res) => {
-  const userEmail = req.body.emailId;
   try {
+    const userEmail = req.body.emailId;
     const user = await User.findOne({ emailId: userEmail });
     if (user) res.send(user);
     else res.send("user not found");
@@ -89,11 +92,8 @@ app.patch("/patch/:userId", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
-  const token = req.cookies.token;
-  if (!token) throw new Error("Invalid token");
-  const { _id } = jwt.verify(token, privateKey);
-  const user = await User.findById({ _id: _id });
+app.get("/profile", userAuth, async (req, res) => {
+  const { user } = req;
   res.send(user);
 });
 
